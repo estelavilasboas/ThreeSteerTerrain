@@ -9,6 +9,7 @@
   <script src="../libs/three.min.js"></script>
   <script src="../js/threejs/controls/OrbitControls.js"></script>
   <script src="../js/ThreeSteer.js"></script>
+  <script src="../js/HeightMap.js"></script>
   <link rel="stylesheet" type="text/css" href="css/main.css"/>
   <link rel="stylesheet" type="text/css" href="css/gui.css"/>
 </head>
@@ -95,6 +96,12 @@
 
     scene.add(entity);
 
+    // Height Map
+    heightMap = new HeightMap();
+    heightMap.width = MAP_WIDTH;
+    heightMap.height = MAP_HEIGHT;
+    console.log(heightMap.width, heightMap.height);
+
     //Plane boundaries (do not cross)
     boundaries=new THREE.Box3(new THREE.Vector3(-MAP_LIMIT,0, -MAP_LIMIT), new THREE.Vector3(MAP_LIMIT, 0, MAP_LIMIT));
 
@@ -124,7 +131,7 @@
     controls.update();
     entity.arrive(ball.position);
 
-    entity.showPosition();
+    // entity.showPosition();
 
     if(entity.lookAtDirection) {
       entity.lookWhereGoing(true);
