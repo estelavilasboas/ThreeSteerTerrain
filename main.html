@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>THREE Steering Behaviours Examples</title>
+    <link rel="stylesheet" type="text/css" href="examples/css/index.css"/>
+</head>
+<script>
+
+    function go(location)
+    {
+        document.getElementById('main-frame').src = location;
+    }
+</script>
+<body>
+    <iframe src="examples/Seek.html" id="main-frame"></iframe>
+
+    <div id="menu-container">
+        <div id="menu">
+            <div class="menu-title">Three-Steer Examples</div>
+
+            <div class="menu-item-separator">Wireframe:</div>
+            <div class="menu-item" onclick="go('examples/Seek.html')">Seek</div>
+            <div class="menu-item" onclick="go('examples/Flee.html')">Flee</div>
+            <div class="menu-item" onclick="go('examples/Arrive.html')">Arrive</div>
+            <div class="menu-item" onclick="go('examples/Pursue.html')">Pursue</div>
+            <div class="menu-item" onclick="go('examples/Evade.html')">Evade</div>
+            <div class="menu-item" onclick="go('examples/Interpose.html')">Interpose</div>
+            <div class="menu-item" onclick="go('examples/Wander.html')">Wander</div>
+            <div class="menu-item" onclick="go('examples/CollisionAvoidance.html')">Collision Avoidance</div>
+            <div class="menu-item" onclick="go('examples/PathFollow.html')">Path Following</div>
+            <div class="menu-item" onclick="go('examples/LeaderFollow.html')">Leader Following</div>
+            <div class="menu-item" onclick="go('examples/Queue.html')">Queue</div>
+            <div class="menu-item" onclick="go('examples/Flocking.html')">Flocking</div>
+
+            <div class="menu-item-separator">Animated characters:</div>
+            <div class="menu-item" onclick="go('examples/animated/Seek.html')">Seek</div>
+            <div class="menu-item" onclick="go('examples/animated/Interpose.html')">Interpose</div>
+            <div class="menu-item" onclick="go('examples/animated/Wander.html')">Wander</div>
+            <div class="menu-item" onclick="go('examples/animated/CollisionAvoidance.html')">Collision Avoidance</div>
+            <div class="menu-item" onclick="go('examples/animated/PathFollow.html')">Path Following</div>
+            <div class="menu-item" onclick="go('examples/animated/LeaderFollow.html')">Leader Following</div>
+            <div class="menu-item" onclick="go('examples/animated/Queue.html')">Queue</div>
+            <div class="menu-item" onclick="go('examples/animated/Flocking.html')">Flocking</div>
+
+        </div>
+    </div>
+</body>
+</html>
