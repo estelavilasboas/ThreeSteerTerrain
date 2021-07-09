@@ -1,6 +1,8 @@
-Entity = function (mesh) {
+Entity = function (id, mesh) {
 
   THREE.Group.apply(this);
+
+  this.id = id;
 
   this.mesh = mesh;
   this.mass = 1;
@@ -14,6 +16,12 @@ Entity = function (mesh) {
 
   this.velocitySamples = []
   this.numSamplesForSmoothing = 20
+
+  Object.defineProperty(Entity.prototype, 'id', {
+    get: function () {
+      return this.id;
+    }
+  });
 
   Object.defineProperty(Entity.prototype, 'width', {
     enumerable: true,
@@ -182,9 +190,11 @@ Entity.prototype = Object.assign(Object.create(THREE.Group.prototype), {
 
 });
 
-SteeringEntity = function (mesh) {
+SteeringEntity = function (id, mesh) {
 
-  Entity.call(this, mesh);
+  Entity.call(this, id, mesh);
+
+  this.id = id;
 
   this.maxForce = 5;
   this.arrivalThreshold = 400;

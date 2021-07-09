@@ -23,10 +23,11 @@
   var ball;
   var boundaries;
   var params;
+  var heightMap;
 
-  const MAP_WIDTH = 5000;
-  const MAP_HEIGHT = 5000;
-  const MAP_LIMIT = 2500;
+  const MAP_WIDTH = 500;
+  const MAP_HEIGHT = 500;
+  const MAP_LIMIT = 250;
 
   function onClick(event) {
     if (event.altKey) {
@@ -37,6 +38,7 @@
       if (intersects.length > 0) {
         ball.position.set(intersects[0].point.x, 50, intersects[0].point.z)
       }
+      heightMap.showMap();
     }
   }
 
@@ -90,17 +92,15 @@
     var mesh = new THREE.Mesh(geometry, material);
     mesh.position.setY(100)
     // Entity
-    entity=new SteeringEntity(mesh);
+    entity=new SteeringEntity(1, mesh);
     setRandomPosition(entity);
     entity.lookAtDirection=true;
 
     scene.add(entity);
 
     // Height Map
-    heightMap = new HeightMap();
-    heightMap.width = MAP_WIDTH;
-    heightMap.height = MAP_HEIGHT;
-    console.log(heightMap.width, heightMap.height);
+    heightMap = new HeightMap(MAP_WIDTH, MAP_HEIGHT);
+    heightMap.constructMap();
 
     //Plane boundaries (do not cross)
     boundaries=new THREE.Box3(new THREE.Vector3(-MAP_LIMIT,0, -MAP_LIMIT), new THREE.Vector3(MAP_LIMIT, 0, MAP_LIMIT));
@@ -131,8 +131,6 @@
     controls.update();
     entity.arrive(ball.position);
 
-    // entity.showPosition();
-
     if(entity.lookAtDirection) {
       entity.lookWhereGoing(true);
     } else {
@@ -141,6 +139,7 @@
 
     entity.bounce(boundaries)
     entity.update();
+    heightMap.update(entity.id, entity.position.x, entity.position.z);
 
     renderer.render(scene, camera);
     stats.update();
