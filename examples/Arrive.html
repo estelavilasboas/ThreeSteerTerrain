@@ -10,6 +10,7 @@
   <script src="../js/threejs/controls/OrbitControls.js"></script>
   <script src="../js/ThreeSteer.js"></script>
   <script src="../js/HeightMap.js"></script>
+  <script src="../js/utils.js"></script>
   <link rel="stylesheet" type="text/css" href="css/main.css"/>
   <link rel="stylesheet" type="text/css" href="css/gui.css"/>
 </head>
@@ -38,7 +39,7 @@
       if (intersects.length > 0) {
         ball.position.set(intersects[0].point.x, 50, intersects[0].point.z)
       }
-      heightMap.showMap();
+      // heightMap.showMap();
     }
   }
 
@@ -112,6 +113,7 @@
     gui.add(entity, 'maxForce', 1, 20).name('Max Force').step(1);
     gui.add(entity, 'lookAtDirection').name('Look At Direction');
     gui.add(entity, 'arrivalThreshold', 100, 2000).name('Threshold').step(1);
+    gui.add(heightMap, 'heightIterator', 1, 10).name('Height map iterator').step(0.1);
 
     window.addEventListener('resize', onWindowResize, false);
     document.addEventListener( 'mousedown', onClick, true );
