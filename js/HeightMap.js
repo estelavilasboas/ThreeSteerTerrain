@@ -1,3 +1,5 @@
+const MAX_HEIGHT = 200;
+
 HeightMap = function (width, depth) {
 
   this.width = width;
@@ -32,14 +34,16 @@ HeightMap.prototype = Object.assign(Object.create(THREE.Group.prototype), {
     const alreadyUpdated = id === this.lastUpdatedId && intX === this.lastUpdatedX && intZ === this.lastUpdatedZ;
 
     if(!alreadyUpdated){
-      this.map[intX][intZ] += this.heightIterator;
+      if(this.map[intX, intZ] < MAX_HEIGHT) {
+        this.map[intX][intZ] += this.heightIterator;
 
-      this.lastUpdatedId = id;
-      this.lastUpdatedX = intX;
-      this.lastUpdatedZ = intZ;
+        this.lastUpdatedId = id;
+        this.lastUpdatedX = intX;
+        this.lastUpdatedZ = intZ;
+      }
+
 
       // console.log(this.lastUpdatedId, this.lastUpdatedX, this.lastUpdatedZ, this.map[intX][intZ]);
-
     }
   },
 

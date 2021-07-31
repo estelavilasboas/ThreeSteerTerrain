@@ -11,6 +11,7 @@
   <script src="../js/ThreeSteer.js"></script>
   <script src="../js/HeightMap.js"></script>
   <script src="../js/utils.js"></script>
+  <script src="../js/threex.terrain.js"></script>
   <link rel="stylesheet" type="text/css" href="css/main.css"/>
   <link rel="stylesheet" type="text/css" href="css/gui.css"/>
 </head>
@@ -41,6 +42,15 @@
       }
       // heightMap.showMap();
     }
+	  var terrainGeometry	= THREEx.Terrain.heightMapToPlaneGeometry(heightMap.map)
+    var terrainMaterial	= new THREE.MeshPhongMaterial({
+		  shading		: THREE.FlatShading,
+	  	vertexColors 	: THREE.VertexColors,
+	  });
+
+    var terrain=new THREE.Mesh( terrainGeometry, terrainMaterial );
+    terrain.rotation.x=-Math.PI*.5;
+    scene.add(terrain);
   }
 
 
