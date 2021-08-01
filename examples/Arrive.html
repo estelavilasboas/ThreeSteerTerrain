@@ -28,8 +28,6 @@
     var params;
     var heightMap;
 
-    var floorGeometry;
-
     const MAP_WIDTH = 500;
     const MAP_DEPTH = 500;
     const MAP_LIMIT = 250;
@@ -59,23 +57,23 @@
 
       // THREEx.Terrain.simplexHeightMap(heightMap.map);
 
-      var geometry = THREEx.Terrain.heightMapToPlaneGeometry(heightMap.map);
-      THREEx.Terrain.heightMapToVertexColor(heightMap.map, geometry);
+      var TerrainGeometry = THREEx.Terrain.heightMapToPlaneGeometry(heightMap.map);
+      THREEx.Terrain.heightMapToVertexColor(heightMap.map, TerrainGeometry);
 
-      var material = new THREE.MeshBasicMaterial({
+      var TerrainMaterial = new THREE.MeshBasicMaterial({
         shading: THREE.FlatShading,
         vertexColors: THREE.VertexColors,
       });
 
-      var mesh1 = new THREE.Mesh(geometry, material);
+      var terrain = new THREE.Mesh(TerrainGeometry, TerrainMaterial);
 
-      mesh1.rotation.x = -Math.PI * 0.5;
-      mesh1.lookAt(new THREE.Vector3(0, 1, 0));
-      mesh1.scale.y = 2;
-      mesh1.scale.x = 2;
-      mesh1.scale.z = 0.2;
-      mesh1.scale.multiplyScalar(250);
-      scene.add(mesh1);
+      terrain.rotation.x = -Math.PI * 0.5;
+      terrain.scale.y = 2;
+      terrain.scale.x = 2;
+      terrain.scale.z = 0.2;
+      terrain.scale.multiplyScalar(250);
+
+      scene.add(terrain);
     }
 
     function init(element) {
@@ -115,7 +113,7 @@
       heightMap.constructMap();
 
       // Floor
-      floorGeometry = new THREE.PlaneGeometry(
+      var floorGeometry = new THREE.PlaneGeometry(
         MAP_WIDTH,
         MAP_DEPTH,
         MAP_WIDTH / 2,
