@@ -86,7 +86,6 @@ THREEx.Terrain.heightMapToCanvas	= function(heightMap, canvas){
  */
 THREEx.Terrain.heightMapToPlaneGeometry	= function(heightMap){
 	// get heightMap dimensions
-	console.log(heightMap);
 	var width	= heightMap.length
 	var depth	= heightMap[0].length
 	// build geometry
@@ -221,7 +220,6 @@ THREEx.Terrain.heightMapToVertexColor	= function(heightMap, geometry){
 	var width	= heightMap.length
 	var depth	= heightMap[0].length
 	// loop on each vertex of the geometry
-	var color	= new THREE.Color()
 	for(var i = 0; i < geometry.faces.length; i++){
 		var face	= geometry.faces[i]
 		if( face instanceof THREE.Face4 ){
@@ -358,7 +356,7 @@ THREEx.Terrain.PlaneGeometry = function ( width, height, widthSegments, heightSe
 
 	}
 
-	this.computeCentroids();
+	// this.computeCentroids();
 
 };
 
