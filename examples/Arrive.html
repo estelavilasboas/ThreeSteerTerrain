@@ -47,33 +47,11 @@
         if (intersects.length > 0) {
           ball.position.set(intersects[0].point.x, 6, intersects[0].point.z);
         }
-        // heightMap.showMap();
       }
 
       if (event.key === 't'){
         constructTerrain();
       }
-      // var terrainGeometry = THREEx.Terrain.heightMapToPlaneGeometry(
-      //   heightMap.map
-      // );
-      // var terrainMaterial = new THREE.MeshPhongMaterial({
-      //   shading: THREE.FlatShading,
-      //   vertexColors: THREE.VertexColors,
-      // });
-
-      // var terrain = new THREE.Mesh(terrainGeometry, terrainMaterial);
-      // terrain.rotation.x = -Math.PI * 0.5;
-      // scene.add(terrain);
-      // if (event.shiftKey) {
-      // console.log(floorGeometry);
-      // const vertices = floorGeometry.vertices;
-
-      // for (let i = 0, j = 0, l = vertices.length -1; i < l; i++, j++) {
-      //   vertices[j].z = 20 + i;
-      //   console.log(vertices[j].z);
-
-      // }
-      // }
     }
 
     function constructTerrain() {
@@ -135,23 +113,6 @@
       // Height Map
       heightMap = new HeightMap(MAP_WIDTH, MAP_DEPTH);
       heightMap.constructMap();
-      // heightMap = THREEx.Terrain.allocateHeightMap(MAP_WIDTH, MAP_DEPTH);
-      // THREEx.Terrain.simplexHeightMap(heightMap);
-      // var geometry = THREEx.Terrain.heightMapToPlaneGeometry(heightMap);
-      // THREEx.Terrain.heightMapToVertexColor(heightMap, geometry);
-
-      // var material = new THREE.MeshBasicMaterial({
-      //   shading: THREE.FlatShading,
-      //   vertexColors: THREE.VertexColors,
-      // });
-      // var mesh1 = new THREE.Mesh(geometry, material);
-      // mesh1.rotation.x = -Math.PI * 0.5;
-      // mesh1.lookAt(new THREE.Vector3(0, 1, 0));
-      // mesh1.scale.y = 2;
-      // mesh1.scale.x = 2;
-      // mesh1.scale.z = 0.2;
-      // mesh1.scale.multiplyScalar(250);
-      // scene.add(mesh1);
 
       // Floor
       floorGeometry = new THREE.PlaneGeometry(
