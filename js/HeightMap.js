@@ -30,8 +30,8 @@ HeightMap.prototype = Object.assign(Object.create(THREE.Group.prototype), {
 
   update: function (id, x, z) {
     if (this.allowUpdate) {
-      var intX = Math.floor(x + this.width / 2);
-      var intZ = Math.floor(z + this.depth / 2);
+      var intX = Math.floor(x + (this.width / 2));
+      var intZ = Math.floor(z + (this.depth / 2));
 
       const alreadyUpdated =
         id === this.lastUpdatedId &&
@@ -39,7 +39,7 @@ HeightMap.prototype = Object.assign(Object.create(THREE.Group.prototype), {
         intZ === this.lastUpdatedZ;
 
       if (!alreadyUpdated) {
-        if (this.map[intX][intZ] < MAX_HEIGHT) {
+        if (this.map[intX][intZ] <= MAX_HEIGHT) {
           this.map[intX][intZ] += this.heightIterator;
 
           this.lastUpdatedId = id;
@@ -53,7 +53,7 @@ HeightMap.prototype = Object.assign(Object.create(THREE.Group.prototype), {
   },
 
   constructMap: function () {
-    this.map = THREEx.Terrain.allocateHeightMap(this.width, this.depth);
+    this.map = THREEx.Terrain.allocateHeightMap(this.width + 1, this.depth + 1);
   },
 
   showMap: function () {
