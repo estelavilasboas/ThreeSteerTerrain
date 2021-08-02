@@ -16,12 +16,6 @@ Entity = function (id, mesh) {
   this.velocitySamples = [];
   this.numSamplesForSmoothing = 20;
 
-  Object.defineProperty(Entity.prototype, "id", {
-    get: function () {
-      return this.id;
-    },
-  });
-
   Object.defineProperty(Entity.prototype, "width", {
     enumerable: true,
     configurable: true,
@@ -180,9 +174,9 @@ Entity.prototype = Object.assign(Object.create(THREE.Group.prototype), {
 });
 
 SteeringEntity = function (id, mesh) {
-  Entity.call(this, id, mesh);
-
   this.id = id;
+
+  Entity.call(this, this.id, mesh);
 
   this.maxForce = 5;
   this.arrivalThreshold = 400;
