@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>Steering Behaviours: ARRIVE</title>
+    <title>Steering Behaviours: ARRIVE AND WANDER</title>
 
     <script src="../libs/dat.gui.min.js"></script>
     <script src="../libs/stats.min.js"></script>
@@ -215,8 +215,8 @@
       heightMap.update(entity.id, entity.position.x, entity.position.z);
 
       wanderEntity.wander()
-      wanderEntity.maxSpeed=entity.maxSpeed - 3;
-      wanderEntity.maxForce=entity.maxForce - 3;
+      wanderEntity.maxSpeed=1;
+      wanderEntity.maxForce=1;
 
       if (wanderEntity.lookAtDirection) {
         wanderEntity.lookWhereGoing(true);
@@ -235,11 +235,6 @@
 
   <body onload="init('container')">
     <div id="container"></div>
-    <!-- <div id="msg">
-      <span style="color: #bfff00; font-weight: bold">ARRIVE: </span><br />ALT +
-      Click on the floor to place the ball.<br />Change threshold for more or
-      less deceleration
-    </div> -->
     <div id="msg">
       <span style="color: #bfff00; font-weight: bold">Press 't' to construct the terrain: </span>
       <br />After this will not be possible to update<br />the height map.
