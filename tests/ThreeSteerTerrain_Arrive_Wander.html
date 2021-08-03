@@ -182,9 +182,9 @@
       gui.add(entity, "lookAtDirection").name("Look At Direction");
       gui.add(entity, "arrivalThreshold", 100, 2000).name("Threshold").step(1);
       gui
-        .add(heightMap, "heightIterator", 1, 10)
+        .add(heightMap, "heightIterator", 0, 5)
         .name("Height map iterator")
-        .step(0.1);
+        .step(0.001);
 
       window.addEventListener("resize", onWindowResize, false);
       document.addEventListener("mousedown", onClick, true);
