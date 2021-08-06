@@ -1,4 +1,4 @@
-const MAX_HEIGHT = 200;
+const MAX_HEIGHT = 80;
 
 HeightMap = function (width, depth) {
   this.width = width;
@@ -6,7 +6,7 @@ HeightMap = function (width, depth) {
 
   this.map = [];
 
-  this.heightIterator = 0.5;
+  this.heightIterator = 0.05;
 
   this.lastUpdatedX = null;
   this.lastUpdatedZ = null;
@@ -30,16 +30,19 @@ HeightMap.prototype = Object.assign(Object.create(THREE.Group.prototype), {
 
   update: function (id, x, z) {
     if (this.allowUpdate) {
-      var intX = Math.floor(x + (this.width / 2));
-      var intZ = Math.floor(z + (this.depth / 2));
+      var intX = Math.floor(x + this.width / 2);
+      var intZ = Math.floor(z + this.depth / 2);
 
+      intX = setPositionInsideHeightMapLimits(intX, this.width);
+      intZ = setPositionInsideHeightMapLimits(intZ, this.depth);
+     
       const alreadyUpdated =
         id === this.lastUpdatedId &&
         intX === this.lastUpdatedX &&
         intZ === this.lastUpdatedZ;
 
       if (!alreadyUpdated) {
-        if (this.map[intX][intZ] <= MAX_HEIGHT) {
+        if (this.map[intX][intZ] < MAX_HEIGHT) {
           this.map[intX][intZ] += this.heightIterator;
 
           this.lastUpdatedId = id;
