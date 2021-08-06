@@ -23,33 +23,20 @@
     var renderer;
     var controls;
     var stats;
-    var entity;
-    var wander;
-    var ball;
+    var entities;
+    var wanderEntity;
     var boundaries;
     var params;
     var heightMap;
+    
 
     const MAP_WIDTH = 500;
     const MAP_DEPTH = 500;
     const MAP_LIMIT = 250;
+    const NUM_ENTITIES = 5;
 
     function onClick(event) {
-      if (event.altKey) {
-        var mouse3D = new THREE.Vector3(
-          (event.clientX / window.innerWidth) * 2 - 1,
-          -(event.clientY / window.innerHeight) * 2 + 1,
-          0
-        );
-        var raycaster = new THREE.Raycaster();
-        raycaster.setFromCamera(mouse3D, camera);
-        var intersects = raycaster.intersectObjects(scene.children);
-        if (intersects.length > 0) {
-          ball.position.set(intersects[0].point.x, 6, intersects[0].point.z);
-        }
-      }
-
-      if (event.key === 't'){
+      if (event.key === "t") {
         constructTerrain();
       }
     }
@@ -57,7 +44,9 @@
     function constructTerrain() {
       heightMap.denyUpdate();
 
-      var TerrainGeometry = THREEx.Terrain.heightMapToPlaneGeometry(heightMap.map);
+      var TerrainGeometry = THREEx.Terrain.heightMapToPlaneGeometry(
+        heightMap.map
+      );
       THREEx.Terrain.heightMapToVertexColor(heightMap.map, TerrainGeometry);
 
       var TerrainMaterial = new THREE.MeshBasicMaterial({
@@ -128,43 +117,23 @@
       floor.rotation.x = -Math.PI * 0.5;
       scene.add(floor);
 
-      //Ball
-      var ballGeometry = new THREE.SphereGeometry(12, 16, 16);
-      var ballMaterial = new THREE.MeshBasicMaterial({ color: 0xbcff00 });
-      ball = new THREE.Mesh(ballGeometry, ballMaterial);
-      setRandomPosition(ball);
-      ball.position.setY(6);
-      scene.add(ball);
-
-      // Entity Arrive Mesh
-      var geometry = new THREE.BoxGeometry(25, 50, 15);
-      var material = new THREE.MeshBasicMaterial({
+      // Entity Mesh
+      var entitiesGeometry = new THREE.BoxGeometry(25, 50, 15);
+      var entitiesMaterial = new THREE.MeshBasicMaterial({
         color: 0xffffff,
         wireframe: true,
       });
-      var mesh = new THREE.Mesh(geometry, material);
-      mesh.position.setY(25);
-      // Entity Arrive
-      entity = new SteeringEntity(1, mesh);
-      setRandomPosition(entity);
-      entity.lookAtDirection = true;
+      // Entities
+      entities = [];
+      for (var i = 0; i < NUM_ENTITIES; i++) {
+        var entityMesh = new THREE.Mesh(entitiesGeometry, entitiesMaterial);
+        entityMesh.position.setY(25);
 
-      scene.add(entity);
-
-      // Entity Wander Mesh
-      var wanderGeometry = new THREE.BoxGeometry(25, 50, 15);
-      var wanderMaterial = new THREE.MeshBasicMaterial({
-        color: 0xffffff,
-        wireframe: true,
-      });
-      var wanderMesh = new THREE.Mesh(wanderGeometry, wanderMaterial);
-      wanderMesh.position.setY(25);
-      // Entity Wander
-      wanderEntity = new SteeringEntity(2, wanderMesh);
-      setRandomPosition(wanderEntity);
-      wanderEntity.lookAtDirection = true;
-
-      scene.add(wanderEntity);
+        var entity = new SteeringEntity(i, entityMesh);
+        setRandomPosition(entity);
+        entities.push(entity);
+        scene.add(entity);
+      }
 
       //Plane boundaries (do not cross)
       boundaries = new THREE.Box3(
@@ -175,10 +144,18 @@
       params = { helper: false };
       //Gui
       var gui = new dat.GUI();
-      gui.add(entity, "maxSpeed", 1, 50).name("Max Speed").step(1);
-      gui.add(entity, "maxForce", 1, 20).name("Max Force").step(1);
-      gui.add(entity, "lookAtDirection").name("Look At Direction");
-      gui.add(entity, "arrivalThreshold", 100, 2000).name("Threshold").step(1);
+      // gui.add(wanderEntity, "maxSpeed", 1, 50).name("Max Speed").step(1);
+      // gui.add(wanderEntity, "maxForce", 1, 20).name("Max Force").step(1);
+      // gui.add(wanderEntity, "lookAtDirection").name("Look At Direction");
+      // gui
+      //   .add(wanderEntity, "wanderRadius", 5, 1000)
+      //   .name("Wander Radius")
+      //   .step(1);
+      // gui.add(wanderEntity, "wanderRange", 1, 20).name("Wander Range").step(1);
+      // gui
+      //   .add(wanderEntity, "wanderDistance", 10, 100)
+      //   .name("Wander Distance")
+      //   .step(1);
       gui
         .add(heightMap, "heightIterator", 0, 2)
         .name("Height map iterator")
@@ -200,31 +177,20 @@
       requestAnimationFrame(animate);
       controls.update();
 
-      entity.arrive(ball.position);
+      for (var i = 0; i < entities.length; i++) {
+        entities[i].wander();
 
-      if (entity.lookAtDirection) {
-        entity.lookWhereGoing(true);
-      } else {
-        entity.rotation.set(0, 0, 0);
+        if (params.lookAtDirection) entities[i].lookWhereGoing(true);
+        else entities[i].rotation.set(0, 0, 0);
+
+        entities[i].bounce(boundaries);
+        entities[i].update();
+        heightMap.update(
+          entities[i].id,
+          entities[i].position.x,
+          entities[i].position.z
+        );
       }
-
-      entity.bounce(boundaries);
-      entity.update();
-      heightMap.update(entity.id, entity.position.x, entity.position.z);
-
-      wanderEntity.wander()
-      wanderEntity.maxSpeed=1;
-      wanderEntity.maxForce=1;
-
-      if (wanderEntity.lookAtDirection) {
-        wanderEntity.lookWhereGoing(true);
-      } else {
-        wanderEntity.rotation.set(0, 0, 0);
-      }
-
-      wanderEntity.bounce(boundaries);
-      wanderEntity.update();
-      heightMap.update(wanderEntity.id, wanderEntity.position.x, wanderEntity.position.z);
 
       renderer.render(scene, camera);
       stats.update();
@@ -234,7 +200,9 @@
   <body onload="init('container')">
     <div id="container"></div>
     <div id="msg">
-      <span style="color: #bfff00; font-weight: bold">Press 't' to construct the terrain: </span>
+      <span style="color: #bfff00; font-weight: bold"
+        >Press 't' to construct the terrain:
+      </span>
       <br />After this will not be possible to update<br />the height map.
     </div>
     <a
