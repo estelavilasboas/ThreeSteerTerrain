@@ -2,26 +2,37 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>Steering Behaviours: ARRIVE</title>
+    <title>Steering Behaviours: ARRIVE AND WANDER</title>
 
     <script src="../libs/dat.gui.min.js"></script>
     <script src="../libs/stats.min.js"></script>
     <script src="../libs/three.min.js"></script>
     <script src="../js/threejs/controls/OrbitControls.js"></script>
+    <script src="../js/threejs/controls/SimplexNoise.js"></script>
     <script src="../js/ThreeSteer.js"></script>
-    <link rel="stylesheet" type="text/css" href="css/main.css" />
-    <link rel="stylesheet" type="text/css" href="css/gui.css" />
+    <script src="../js/HeightMap.js"></script>
+    <script src="../js/utils.js"></script>
+    <script src="../js/threex.terrain.js"></script>
+    <link rel="stylesheet" type="text/css" href="../examples/css/main.css" />
+    <link rel="stylesheet" type="text/css" href="../examples/css/gui.css" />
   </head>
   <script>
     var container;
     var camera;
-    var scene, renderer;
+    var scene;
+    var renderer;
     var controls;
     var stats;
     var entity;
+    var wander;
     var ball;
     var boundaries;
     var params;
+    var heightMap;
+
+    const MAP_WIDTH = 500;
+    const MAP_DEPTH = 500;
+    const MAP_LIMIT = 250;
 
     function onClick(event) {
       if (event.altKey) {
@@ -34,15 +45,41 @@
         raycaster.setFromCamera(mouse3D, camera);
         var intersects = raycaster.intersectObjects(scene.children);
         if (intersects.length > 0) {
-          ball.position.set(intersects[0].point.x, 50, intersects[0].point.z);
+          ball.position.set(intersects[0].point.x, 6, intersects[0].point.z);
         }
       }
+
+      if (event.key === 't'){
+        constructTerrain();
+      }
+    }
+
+    function constructTerrain() {
+      heightMap.denyUpdate();
+
+      var TerrainGeometry = THREEx.Terrain.heightMapToPlaneGeometry(heightMap.map);
+      THREEx.Terrain.heightMapToVertexColor(heightMap.map, TerrainGeometry);
+
+      var TerrainMaterial = new THREE.MeshBasicMaterial({
+        shading: THREE.FlatShading,
+        vertexColors: THREE.VertexColors,
+      });
+
+      var terrain = new THREE.Mesh(TerrainGeometry, TerrainMaterial);
+
+      terrain.rotation.x = -Math.PI * 0.5;
+      terrain.scale.y = 2;
+      terrain.scale.x = 2;
+      terrain.scale.z = 0.2;
+      terrain.scale.multiplyScalar(250);
+
+      scene.add(terrain);
     }
 
     function init(element) {
       container = document.getElementById(element);
       camera = new THREE.PerspectiveCamera(
-        45,
+        5,
         window.innerWidth / window.innerHeight,
         1,
         50000
@@ -56,7 +93,7 @@
       renderer.domElement.style.top = 0;
       container.appendChild(renderer.domElement);
 
-      camera.position.set(0, 10000, 10000);
+      camera.position.set(0, 5000, 5000);
       camera.lookAt(new THREE.Vector3(0, 0, 0));
 
       controls = new THREE.OrbitControls(camera, renderer.domElement);
@@ -71,10 +108,19 @@
       stats.domElement.style.zIndex = 100;
       container.appendChild(stats.domElement);
 
+      // Height Map
+      heightMap = new HeightMap(MAP_WIDTH, MAP_DEPTH);
+      heightMap.constructMap();
+
       // Floor
-      var floorGeometry = new THREE.PlaneGeometry(10000, 10000, 32);
+      var floorGeometry = new THREE.PlaneGeometry(
+        MAP_WIDTH,
+        MAP_DEPTH,
+        MAP_WIDTH / 2,
+        MAP_DEPTH / 2
+      );
       var floorMaterial = new THREE.MeshBasicMaterial({
-        color: 0x666666,
+        color: 0xd3d3d3,
         transparent: true,
         opacity: 0.5,
       });
@@ -83,39 +129,47 @@
       scene.add(floor);
 
       //Ball
-      var ballGeometry = new THREE.SphereGeometry(50, 32, 32);
+      var ballGeometry = new THREE.SphereGeometry(12, 16, 16);
       var ballMaterial = new THREE.MeshBasicMaterial({ color: 0xbcff00 });
       ball = new THREE.Mesh(ballGeometry, ballMaterial);
-      ball.position.set(
-        Math.random() * (5000 - -5000) + -5000,
-        50,
-        Math.random() * (5000 - -5000) + -5000
-      );
+      setRandomPosition(ball);
+      ball.position.setY(6);
       scene.add(ball);
 
-      // Entity Mesh
-      var geometry = new THREE.BoxGeometry(100, 200, 50);
+      // Entity Arrive Mesh
+      var geometry = new THREE.BoxGeometry(25, 50, 15);
       var material = new THREE.MeshBasicMaterial({
         color: 0xffffff,
         wireframe: true,
       });
       var mesh = new THREE.Mesh(geometry, material);
-      mesh.position.setY(100);
-      // Entity
+      mesh.position.setY(25);
+      // Entity Arrive
       entity = new SteeringEntity(1, mesh);
-      entity.position.set(
-        Math.random() * (5000 - -5000) + -5000,
-        0,
-        Math.random() * (5000 - -5000) + -5000
-      );
+      setRandomPosition(entity);
       entity.lookAtDirection = true;
 
       scene.add(entity);
 
+      // Entity Wander Mesh
+      var wanderGeometry = new THREE.BoxGeometry(25, 50, 15);
+      var wanderMaterial = new THREE.MeshBasicMaterial({
+        color: 0xffffff,
+        wireframe: true,
+      });
+      var wanderMesh = new THREE.Mesh(wanderGeometry, wanderMaterial);
+      wanderMesh.position.setY(25);
+      // Entity Wander
+      wanderEntity = new SteeringEntity(2, wanderMesh);
+      setRandomPosition(wanderEntity);
+      wanderEntity.lookAtDirection = true;
+
+      scene.add(wanderEntity);
+
       //Plane boundaries (do not cross)
       boundaries = new THREE.Box3(
-        new THREE.Vector3(-5000, 0, -5000),
-        new THREE.Vector3(5000, 0, 5000)
+        new THREE.Vector3(-MAP_LIMIT, 0, -MAP_LIMIT),
+        new THREE.Vector3(MAP_LIMIT, 0, MAP_LIMIT)
       );
 
       params = { helper: false };
@@ -125,9 +179,14 @@
       gui.add(entity, "maxForce", 1, 20).name("Max Force").step(1);
       gui.add(entity, "lookAtDirection").name("Look At Direction");
       gui.add(entity, "arrivalThreshold", 100, 2000).name("Threshold").step(1);
+      gui
+        .add(heightMap, "heightIterator", 0, 2)
+        .name("Height map iterator")
+        .step(0.01);
 
       window.addEventListener("resize", onWindowResize, false);
       document.addEventListener("mousedown", onClick, true);
+      document.addEventListener("keypress", onClick, true);
       animate();
     }
 
@@ -140,11 +199,32 @@
     function animate() {
       requestAnimationFrame(animate);
       controls.update();
+
       entity.arrive(ball.position);
-      if (entity.lookAtDirection) entity.lookWhereGoing(true);
-      else entity.rotation.set(0, 0, 0);
+
+      if (entity.lookAtDirection) {
+        entity.lookWhereGoing(true);
+      } else {
+        entity.rotation.set(0, 0, 0);
+      }
+
       entity.bounce(boundaries);
       entity.update();
+      heightMap.update(entity.id, entity.position.x, entity.position.z);
+
+      wanderEntity.wander()
+      wanderEntity.maxSpeed=1;
+      wanderEntity.maxForce=1;
+
+      if (wanderEntity.lookAtDirection) {
+        wanderEntity.lookWhereGoing(true);
+      } else {
+        wanderEntity.rotation.set(0, 0, 0);
+      }
+
+      wanderEntity.bounce(boundaries);
+      wanderEntity.update();
+      heightMap.update(wanderEntity.id, wanderEntity.position.x, wanderEntity.position.z);
 
       renderer.render(scene, camera);
       stats.update();
@@ -154,9 +234,8 @@
   <body onload="init('container')">
     <div id="container"></div>
     <div id="msg">
-      <span style="color: #bfff00; font-weight: bold">ARRIVE: </span><br />ALT +
-      Click on the floor to place the ball.<br />Change threshold for more or
-      less deceleration
+      <span style="color: #bfff00; font-weight: bold">Press 't' to construct the terrain: </span>
+      <br />After this will not be possible to update<br />the height map.
     </div>
     <a
       href="https://github.com/erosmarcon/three-steer/blob/master/examples/Arrive.html"
