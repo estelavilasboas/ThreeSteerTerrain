@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Steering Behaviours: ARRIVE AND WANDER</title>
+
+    <script src="../libs/dat.gui.min.js"></script>
+    <script src="../libs/stats.min.js"></script>
+    <script src="../libs/three.min.js"></script>
+    <script src="../js/threejs/controls/OrbitControls.js"></script>
+    <script src="../js/threejs/controls/SimplexNoise.js"></script>
+    <script src="../js/ThreeSteer.js"></script>
+    <script src="../js/HeightMap.js"></script>
+    <script src="../js/utils.js"></script>
+    <script src="../js/threex.terrain.js"></script>
+    <link rel="stylesheet" type="text/css" href="../examples/css/main.css" />
+    <link rel="stylesheet" type="text/css" href="../examples/css/gui.css" />
+  </head>
+  <script>
+    var animationFrame;
+    var container;
+    var camera;
+    var renderer;
+    var controls;
+    var stats;
+    var scene;
+
+    var floor;
+    var terrain;
+
+    var heightMap;
+    var boundaries;
+
+    var entities;
+    var wanderEntity;
+
+    var params;
+    var iterationsCount;
+
+    const MAP_WIDTH = 500;
+    const MAP_DEPTH = 500;
+    const MAP_LIMIT = 250;
+    const NUM_ENTITIES = 10;
+    const MAX_ITERATIONS = 20000;
+
+    function constructTerrain() {
+      if (!!scene.getObjectByName("terrain")) {
+        terrain.geometry.dispose();
+        terrain.material.dispose();
+        scene.remove(terrain);
+      }
+
+      var terrainGeometry = THREEx.Terrain.heightMapToPlaneGeometry(
+        heightMap.map
+      );
+      THREEx.Terrain.heightMapToVertexColor(heightMap.map, terrainGeometry);
+
+      var terrainMaterial = new THREE.MeshBasicMaterial({
+        shading: THREE.FlatShading,
+        vertexColors: THREE.VertexColors,
+      });
+
+      terrain = new THREE.Mesh(terrainGeometry, terrainMaterial);
+
+      terrain.name = "terrain";
+      terrain.rotation.x = -Math.PI * 0.5;
+      terrain.scale.y = 2;
+      terrain.scale.x = 2;
+      terrain.scale.z = 0.2;
+      terrain.scale.multiplyScalar(250);
+
+      scene.add(terrain);
+    }
+
+    function init(element) {
+      iterationsCount = 0;
+
+      container = document.getElementById(element);
+      camera = new THREE.PerspectiveCamera(
+        5,
+        window.innerWidth / window.innerHeight,
+        1,
+        50000
+      );
+      scene = new THREE.Scene();
+
+      renderer = new THREE.WebGLRenderer({ alpha: true });
+      renderer.setClearColor(0x333333, 0);
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.domElement.style.position = "absolute";
+      renderer.domElement.style.top = 0;
+      container.appendChild(renderer.domElement);
+
+      camera.position.set(0, 5000, 5000);
+      camera.lookAt(new THREE.Vector3(0, 0, 0));
+
+      controls = new THREE.OrbitControls(camera, renderer.domElement);
+      controls.maxPolarAngle = Math.PI * 0.5;
+      controls.minDistance = 100;
+      controls.maxDistance = 30000;
+
+      stats = new Stats();
+      stats.domElement.style.position = "absolute";
+      stats.domElement.style.bottom = "0px";
+      stats.domElement.style.left = "180px";
+      stats.domElement.style.zIndex = 100;
+      container.appendChild(stats.domElement);
+
+      // Height Map
+      heightMap = new HeightMap(MAP_WIDTH, MAP_DEPTH);
+      heightMap.constructMap();
+
+      // Floor
+      var floorGeometry = new THREE.PlaneGeometry(
+        MAP_WIDTH,
+        MAP_DEPTH,
+        MAP_WIDTH / 2,
+        MAP_DEPTH / 2
+      );
+      var floorMaterial = new THREE.MeshBasicMaterial({
+        color: 0xd3d3d3,
+        transparent: true,
+        opacity: 0.5,
+      });
+      floor = new THREE.Mesh(floorGeometry, floorMaterial);
+      floor.rotation.x = -Math.PI * 0.5;
+      scene.add(floor);
+
+      // Entity Mesh
+      var entitiesGeometry = new THREE.BoxGeometry(25, 50, 15);
+      var entitiesMaterial = new THREE.MeshBasicMaterial({
+        color: 0xffffff,
+        wireframe: true,
+      });
+      // Entities
+      entities = [];
+      for (var i = 0; i < NUM_ENTITIES; i++) {
+        var entityMesh = new THREE.Mesh(entitiesGeometry, entitiesMaterial);
+        entityMesh.position.setY(25);
+
+        var entity = new SteeringEntity(i, entityMesh);
+        entity.name = "entity" + i;
+        setRandomPosition(entity);
+        entities.push(entity);
+        scene.add(entity);
+      }
+
+      //Plane boundaries (do not cross)
+      boundaries = new THREE.Box3(
+        new THREE.Vector3(-MAP_LIMIT, 0, -MAP_LIMIT),
+        new THREE.Vector3(MAP_LIMIT, 0, MAP_LIMIT)
+      );
+
+      params = {
+        maxSpeed: 1,
+        maxForce: 1,
+        lookAtDirection: true,
+        wanderDistance: 1,
+        wanderRadius: 1,
+        wanderRange: 1,
+        numEntities: 20,
+      };
+
+      //Gui
+      var gui = new dat.GUI();
+      gui.add(params, "maxSpeed", 1, 5).name("Max Speed").step(1);
+      gui.add(params, "maxForce", 1, 2).name("Max Force").step(1);
+      gui
+        .add(params, "wanderRadius", 1, MAP_LIMIT)
+        .name("Wander Radius")
+        .step(1);
+      gui.add(params, "wanderRange", 1, 10).name("Wander Range").step(1);
+      gui.add(params, "wanderDistance", 1, 10).name("Wander Distance").step(1);
+      gui
+        .add(heightMap, "heightIterator", 0, 0.5)
+        .name("Height map iterator")
+        .step(0.001);
+
+      window.addEventListener("resize", onWindowResize, false);
+      animate();
+    }
+
+    function onWindowResize() {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    }
+
+    function animate() {
+      iterationsCount += 1;
+
+      animationFrame = requestAnimationFrame(animate);
+      controls.update();
+
+      if (iterationsCount < MAX_ITERATIONS) {
+        for (var i = 0; i < entities.length; i++) {
+          entities[i].maxSpeed = params.maxSpeed;
+          entities[i].maxForce = params.maxForce;
+          entities[i].wanderDistance = params.wanderDistance;
+          entities[i].wanderRadius = params.wanderRadius;
+          entities[i].wanderRange = params.wanderRange;
+          entities[i].wander();
+
+          if (params.lookAtDirection) entities[i].lookWhereGoing(true);
+          else entities[i].rotation.set(0, 0, 0);
+
+          entities[i].bounce(boundaries);
+          entities[i].update();
+          heightMap.update(
+            entities[i].id,
+            entities[i].position.x,
+            entities[i].position.z
+          );
+        }
+      } else if (iterationsCount === MAX_ITERATIONS){
+        constructTerrain();
+        scene.remove(floor);
+
+        for (var i = 0; i < entities.length; i++) {
+          let entity = scene.getObjectByName("entity" + i);
+          scene.remove(entity);
+        }
+      }
+
+      renderer.render(scene, camera);
+      stats.update();
+    }
+  </script>
+
+  <body onload="init('container')">
+    <div id="container"></div>
+    <!-- <div id="msg">
+      <span style="color: #bfff00; font-weight: bold"
+        >Press 't' to construct the terrain:
+      </span>
+      <br />After this will not be possible to update<br />the height map.
+    </div> -->
+    <a
+      href="https://github.com/erosmarcon/three-steer/blob/master/examples/Arrive.html"
+      target="_blank"
+      ><div class="view-source">View source</div></a
+    >
+  </body>
+</html>
