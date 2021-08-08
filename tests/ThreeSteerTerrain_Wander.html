@@ -35,7 +35,6 @@
 
     var params;
 
-
     const MAP_WIDTH = 500;
     const MAP_DEPTH = 500;
     const MAP_LIMIT = 250;
@@ -207,11 +206,7 @@
 
         entities[i].bounce(boundaries);
         entities[i].update();
-        heightMap.update(
-          entities[i].id,
-          entities[i].position.x,
-          entities[i].position.z
-        );
+        heightMap.update(entities[i]);
       }
 
       renderer.render(scene, camera);

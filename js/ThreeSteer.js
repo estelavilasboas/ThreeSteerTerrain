@@ -195,6 +195,9 @@ SteeringEntity = function (id, mesh) {
   this.pathIndex = 0;
 
   this.steeringForce = new THREE.Vector3(0, 0, 0);
+
+  this.lastUpdatedX = null;
+  this.lastUpdatedZ = null;
 };
 
 SteeringEntity.prototype = Object.assign(Object.create(Entity.prototype), {

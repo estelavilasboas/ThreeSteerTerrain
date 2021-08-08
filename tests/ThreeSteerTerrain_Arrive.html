@@ -194,7 +194,7 @@
 
       entity.bounce(boundaries);
       entity.update();
-      heightMap.update(entity.id, entity.position.x, entity.position.z);
+      heightMap.update(entity);
 
       renderer.render(scene, camera);
       stats.update();

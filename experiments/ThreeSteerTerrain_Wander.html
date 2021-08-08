@@ -206,13 +206,10 @@
 
           entities[i].bounce(boundaries);
           entities[i].update();
-          heightMap.update(
-            entities[i].id,
-            entities[i].position.x,
-            entities[i].position.z
-          );
+
+          heightMap.update(entities[i]);
         }
-      } else if (iterationsCount === MAX_ITERATIONS){
+      } else if (iterationsCount === MAX_ITERATIONS) {
         constructTerrain();
         scene.remove(floor);
 
