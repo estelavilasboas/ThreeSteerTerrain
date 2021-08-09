@@ -10,6 +10,8 @@ Entity = function (id, mesh) {
   this.position = new THREE.Vector3(0, 0, 0);
   this.velocity = new THREE.Vector3(0, 0, 0);
 
+  this.lastUpdatedPosition = new THREE.Vector3(0, 0, 0);
+
   this.box = new THREE.Box3().setFromObject(mesh);
   this.raycaster = new THREE.Raycaster();
 
@@ -195,9 +197,6 @@ SteeringEntity = function (id, mesh) {
   this.pathIndex = 0;
 
   this.steeringForce = new THREE.Vector3(0, 0, 0);
-
-  this.lastUpdatedX = null;
-  this.lastUpdatedZ = null;
 };
 
 SteeringEntity.prototype = Object.assign(Object.create(Entity.prototype), {
