@@ -40,8 +40,9 @@
     const MAP_WIDTH = 500;
     const MAP_DEPTH = 500;
     const MAP_LIMIT = 250;
+
     const NUM_ENTITIES = 10;
-    const MAX_ITERATIONS = 20000;
+    const MAX_ITERATIONS = 200;
 
     function constructTerrain() {
       if (!!scene.getObjectByName("terrain")) {
@@ -217,6 +218,8 @@
           let entity = scene.getObjectByName("entity" + i);
           scene.remove(entity);
         }
+
+        createCsv(heightMap.map, NUM_ENTITIES, MAX_ITERATIONS, "Wander");
       }
 
       renderer.render(scene, camera);
