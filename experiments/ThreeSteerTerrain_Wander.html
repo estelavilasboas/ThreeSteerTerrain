@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>Steering Behaviours: ARRIVE AND WANDER</title>
+    <title>Steering Behaviours: WANDER</title>
 
     <script src="../libs/dat.gui.min.js"></script>
     <script src="../libs/stats.min.js"></script>
@@ -41,7 +41,7 @@
     const MAP_DEPTH = 500;
     const MAP_LIMIT = 250;
 
-    const NUM_ENTITIES = 10;
+    const NUM_ENTITIES = 40;
     const MAX_ITERATIONS = 200;
 
     function constructTerrain() {
@@ -64,9 +64,10 @@
       terrain = new THREE.Mesh(terrainGeometry, terrainMaterial);
 
       terrain.name = "terrain";
+      terrain.position.y = 50;
       terrain.rotation.x = -Math.PI * 0.5;
-      terrain.scale.y = 2;
       terrain.scale.x = 2;
+      terrain.scale.y = 2;
       terrain.scale.z = 0.2;
       terrain.scale.multiplyScalar(250);
 
@@ -78,7 +79,7 @@
 
       container = document.getElementById(element);
       camera = new THREE.PerspectiveCamera(
-        5,
+        3,
         window.innerWidth / window.innerHeight,
         1,
         50000
@@ -158,8 +159,7 @@
         lookAtDirection: true,
         wanderDistance: 1,
         wanderRadius: 1,
-        wanderRange: 1,
-        numEntities: 20,
+        wanderRange: 2,
       };
 
       //Gui
@@ -219,7 +219,8 @@
           scene.remove(entity);
         }
 
-        createCsv(heightMap.map, NUM_ENTITIES, MAX_ITERATIONS, "Wander");
+        downloadCsv(heightMap.map, "Wander");
+        downloadScreenshot("Wander");
       }
 
       renderer.render(scene, camera);

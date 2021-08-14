@@ -19,7 +19,7 @@ function setPositionInsideHeightMapLimits(position, limit) {
   return position;
 }
 
-function createCsv(heightMap, numEntities, maxIterations, type) {
+function downloadCsv(heightMap, type) {
   const heightMapToCsv = heightMap.map((line) =>
     line[0] === "," ? line.slice(1) + "\n" : line + "\n"
   );
@@ -32,8 +32,19 @@ function createCsv(heightMap, numEntities, maxIterations, type) {
   );
   file.setAttribute(
     "download",
-    `${type}_${numEntities}_Interations_${maxIterations}.csv`
+    `${type}_${NUM_ENTITIES}_Interations_${MAX_ITERATIONS}.csv`
   );
   document.body.appendChild(file);
   document.querySelector("#download-csv").click();
+}
+
+function downloadScreenshot(type) {
+  renderer.render(scene, camera);
+    renderer.domElement.toBlob(function(blob){
+    	var image = document.createElement('a');
+      var url = URL.createObjectURL(blob);
+      image.href = url;
+      image.download = `${type}_${NUM_ENTITIES}_Interations_${MAX_ITERATIONS}.png`;
+      image.click();
+    }, 'image/png', 1.0);
 }
