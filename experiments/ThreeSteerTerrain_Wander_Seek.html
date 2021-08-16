@@ -189,11 +189,11 @@
       };
 
       //Gui
-      // var gui = new dat.GUI();
-      // gui
-      //   .add(heightMap, "heightIterator", 0, 0.5)
-      //   .name("Height map iterator")
-      //   .step(0.001);
+      var gui = new dat.GUI();
+      gui
+        .add(heightMap, "heightIterator", 0, 0.5)
+        .name("Height map iterator")
+        .step(0.001);
 
       window.addEventListener("resize", onWindowResize, false);
       animate();
@@ -222,8 +222,6 @@
           wanderEntities[i].bounce(boundaries);
           wanderEntities[i].update();
 
-          heightMap.heightIterator = 0.05;
-
           heightMap.update(wanderEntities[i]);
 
           // Seek
@@ -235,8 +233,6 @@
 
           seekEntities[i].bounce(boundaries);
           seekEntities[i].update();
-
-          heightMap.heightIterator = -0.025;
 
           heightMap.update(seekEntities[i]);
         }
