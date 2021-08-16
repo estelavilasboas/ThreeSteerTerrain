@@ -41,8 +41,8 @@
     const MAP_DEPTH = 500;
     const MAP_LIMIT = 250;
 
-    const NUM_ENTITIES = 40;
-    const MAX_ITERATIONS = 2000;
+    const NUM_ENTITIES = 10;
+    const MAX_ITERATIONS = 20000;
 
     function constructTerrain() {
       if (!!scene.getObjectByName("terrain")) {
@@ -111,6 +111,7 @@
       // Height Map
       heightMap = new HeightMap(MAP_WIDTH, MAP_DEPTH);
       heightMap.constructMap();
+      heightMap.heightIterator = 0.05;
 
       // Floor
       var floorGeometry = new THREE.PlaneGeometry(
@@ -188,11 +189,11 @@
       };
 
       //Gui
-      var gui = new dat.GUI();
-      gui
-        .add(heightMap, "heightIterator", 0, 0.5)
-        .name("Height map iterator")
-        .step(0.001);
+      // var gui = new dat.GUI();
+      // gui
+      //   .add(heightMap, "heightIterator", 0, 0.5)
+      //   .name("Height map iterator")
+      //   .step(0.001);
 
       window.addEventListener("resize", onWindowResize, false);
       animate();
@@ -221,17 +222,21 @@
           wanderEntities[i].bounce(boundaries);
           wanderEntities[i].update();
 
+          heightMap.heightIterator = 0.05;
+
           heightMap.update(wanderEntities[i]);
 
           // Seek
           seekEntities[i].seek(wanderEntities[i].position);
-          seekEntities[i].maxSpeed = wanderEntities[i].maxSpeed/2;
+          seekEntities[i].maxSpeed = wanderEntities[i].maxSpeed / 2;
 
           if (params.lookAtDirection) seekEntities[i].lookWhereGoing(true);
           else seekEntities[i].rotation.set(0, 0, 0);
 
           seekEntities[i].bounce(boundaries);
           seekEntities[i].update();
+
+          heightMap.heightIterator = -0.025;
 
           heightMap.update(seekEntities[i]);
         }
@@ -247,8 +252,8 @@
           scene.remove(seekEntity);
         }
 
-        downloadCsv(heightMap.map, "Wander");
-        downloadScreenshot("Wander");
+        downloadCsv(heightMap, "Wander_Seek");
+        downloadScreenshot("Wander_Seek");
       }
 
       renderer.render(scene, camera);

@@ -20,7 +20,7 @@ function setPositionInsideHeightMapLimits(position, limit) {
 }
 
 function downloadCsv(heightMap, type) {
-  const heightMapToCsv = heightMap.map((line) =>
+  const heightMapToCsv = heightMap.map.map((line) =>
     line[0] === "," ? line.slice(1) + "\n" : line + "\n"
   );
 
@@ -32,7 +32,7 @@ function downloadCsv(heightMap, type) {
   );
   file.setAttribute(
     "download",
-    `${type}_${NUM_ENTITIES}_Interations_${MAX_ITERATIONS}.csv`
+    `${type}_${NUM_ENTITIES}_Interations_${MAX_ITERATIONS}_heightIterator_${heightMap.heightIterator}.csv`
   );
   document.body.appendChild(file);
   document.querySelector("#download-csv").click();
@@ -44,7 +44,7 @@ function downloadScreenshot(type) {
     	var image = document.createElement('a');
       var url = URL.createObjectURL(blob);
       image.href = url;
-      image.download = `${type}_${NUM_ENTITIES}_Interations_${MAX_ITERATIONS}.png`;
+      image.download = `${type}_${NUM_ENTITIES}_Interations_${MAX_ITERATIONS}_heightIterator_${heightMap.heightIterator}.png`;
       image.click();
     }, 'image/png', 1.0);
 }

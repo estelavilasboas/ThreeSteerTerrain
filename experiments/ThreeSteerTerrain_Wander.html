@@ -41,8 +41,8 @@
     const MAP_DEPTH = 500;
     const MAP_LIMIT = 250;
 
-    const NUM_ENTITIES = 40;
-    const MAX_ITERATIONS = 200;
+    const NUM_ENTITIES = 10;
+    const MAX_ITERATIONS = 20000;
 
     function constructTerrain() {
       if (!!scene.getObjectByName("terrain")) {
@@ -111,6 +111,7 @@
       // Height Map
       heightMap = new HeightMap(MAP_WIDTH, MAP_DEPTH);
       heightMap.constructMap();
+      heightMap.heightIterator = 0.05;
 
       // Floor
       var floorGeometry = new THREE.PlaneGeometry(
@@ -219,7 +220,7 @@
           scene.remove(entity);
         }
 
-        downloadCsv(heightMap.map, "Wander");
+        downloadCsv(heightMap, "Wander");
         downloadScreenshot("Wander");
       }
 
