@@ -1,7 +1,5 @@
-// const MAX_HEIGHT = 0.5;
-
-// When + and -
-const MAX_HEIGHT = 0.7;
+const MAX_HEIGHT = 0.50;
+const MIN_HEIGHT = -0.50;
 
 HeightMap = function (width, depth) {
   this.width = width;
@@ -38,7 +36,7 @@ HeightMap.prototype = Object.assign(Object.create(THREE.Group.prototype), {
         x === lastUpdatedPosition.x && z === lastUpdatedPosition.z;
 
       if (!alreadyUpdated) {
-        if (this.map[x][z] <= MAX_HEIGHT) {
+        if (this.map[x][z] <= MAX_HEIGHT || this.map[x][z] >= MIN_HEIGHT) {
           this.map[x][z] += this.heightIterator;
 
           lastUpdatedPosition.x = x;
