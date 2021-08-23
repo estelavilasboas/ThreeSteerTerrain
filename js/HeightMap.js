@@ -1,4 +1,7 @@
-const MAX_HEIGHT = 0.5;
+// const MAX_HEIGHT = 0.5;
+
+// When + and -
+const MAX_HEIGHT = 0.7;
 
 HeightMap = function (width, depth) {
   this.width = width;
