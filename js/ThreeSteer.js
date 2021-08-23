@@ -10,6 +10,8 @@ Entity = function (id, mesh) {
   this.position = new THREE.Vector3(0, 0, 0);
   this.velocity = new THREE.Vector3(0, 0, 0);
 
+  this.lastUpdatedPosition = new THREE.Vector3(0, 0, 0);
+
   this.box = new THREE.Box3().setFromObject(mesh);
   this.raycaster = new THREE.Raycaster();
 

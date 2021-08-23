@@ -210,7 +210,7 @@
 
       entity.bounce(boundaries);
       entity.update();
-      heightMap.update(entity.id, entity.position.x, entity.position.z);
+      heightMap.update(entity);
 
       wanderEntity.wander()
       wanderEntity.maxSpeed=1;
@@ -224,7 +224,7 @@
 
       wanderEntity.bounce(boundaries);
       wanderEntity.update();
-      heightMap.update(wanderEntity.id, wanderEntity.position.x, wanderEntity.position.z);
+      heightMap.update(wanderEntity);
 
       renderer.render(scene, camera);
       stats.update();

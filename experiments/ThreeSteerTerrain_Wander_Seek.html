@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>Steering Behaviours: ARRIVE AND WANDER</title>
+    <title>Steering Behaviours: WANDER</title>
 
     <script src="../libs/dat.gui.min.js"></script>
     <script src="../libs/stats.min.js"></script>
@@ -17,6 +17,7 @@
     <link rel="stylesheet" type="text/css" href="../examples/css/gui.css" />
   </head>
   <script>
+    var animationFrame;
     var container;
     var camera;
     var renderer;
@@ -30,22 +31,18 @@
     var heightMap;
     var boundaries;
 
-    var entities;
-    var wanderEntity;
+    var wanderEntities;
+    var seekEntities;
 
     var params;
+    var iterationsCount;
 
     const MAP_WIDTH = 500;
     const MAP_DEPTH = 500;
     const MAP_LIMIT = 250;
-    const NUM_ENTITIES = 5;
 
-    function onClick(event) {
-      if (event.key === "t") {
-        constructTerrain();
-        scene.remove(floor);
-      }
-    }
+    const NUM_ENTITIES = 10;
+    const MAX_ITERATIONS = 20000;
 
     function constructTerrain() {
       if (!!scene.getObjectByName("terrain")) {
@@ -67,9 +64,10 @@
       terrain = new THREE.Mesh(terrainGeometry, terrainMaterial);
 
       terrain.name = "terrain";
+      terrain.position.y = 50;
       terrain.rotation.x = -Math.PI * 0.5;
-      terrain.scale.y = 2;
       terrain.scale.x = 2;
+      terrain.scale.y = 2;
       terrain.scale.z = 0.2;
       terrain.scale.multiplyScalar(250);
 
@@ -77,9 +75,11 @@
     }
 
     function init(element) {
+      iterationsCount = 0;
+
       container = document.getElementById(element);
       camera = new THREE.PerspectiveCamera(
-        5,
+        3,
         window.innerWidth / window.innerHeight,
         1,
         50000
@@ -93,7 +93,7 @@
       renderer.domElement.style.top = 0;
       container.appendChild(renderer.domElement);
 
-      camera.position.set(0, 5000, 5000);
+      camera.position.set(3500, 3500, 5000);
       camera.lookAt(new THREE.Vector3(0, 0, 0));
 
       controls = new THREE.OrbitControls(camera, renderer.domElement);
@@ -111,6 +111,7 @@
       // Height Map
       heightMap = new HeightMap(MAP_WIDTH, MAP_DEPTH);
       heightMap.constructMap();
+      heightMap.heightIterator = 0.05;
 
       // Floor
       var floorGeometry = new THREE.PlaneGeometry(
@@ -128,21 +129,47 @@
       floor.rotation.x = -Math.PI * 0.5;
       scene.add(floor);
 
-      // Entity Mesh
-      var entitiesGeometry = new THREE.BoxGeometry(25, 50, 15);
-      var entitiesMaterial = new THREE.MeshBasicMaterial({
+      // Wander entity Mesh
+      var wanderEntitiesGeometry = new THREE.BoxGeometry(25, 50, 15);
+      var wanderEntitiesMaterial = new THREE.MeshBasicMaterial({
         color: 0xffffff,
         wireframe: true,
       });
-      // Entities
-      entities = [];
-      for (var i = 0; i < NUM_ENTITIES; i++) {
-        var entityMesh = new THREE.Mesh(entitiesGeometry, entitiesMaterial);
+      // Wander entities
+      wanderEntities = [];
+      for (let i = 0; i < NUM_ENTITIES; i++) {
+        let entityMesh = new THREE.Mesh(
+          wanderEntitiesGeometry,
+          wanderEntitiesMaterial
+        );
         entityMesh.position.setY(25);
 
-        var entity = new SteeringEntity(i, entityMesh);
+        let entity = new SteeringEntity(i, entityMesh);
+        entity.name = "wanderEntity" + i;
         setRandomPosition(entity);
-        entities.push(entity);
+        wanderEntities.push(entity);
+        scene.add(entity);
+      }
+
+      // Seek entity Mesh
+      var seekEntitiesGeometry = new THREE.BoxGeometry(25, 50, 15);
+      var seekEntitiesMaterial = new THREE.MeshBasicMaterial({
+        color: 0xff0000,
+        wireframe: true,
+      });
+      // Seek entities
+      seekEntities = [];
+      for (let i = 0; i < NUM_ENTITIES; i++) {
+        let entityMesh = new THREE.Mesh(
+          seekEntitiesGeometry,
+          seekEntitiesMaterial
+        );
+        entityMesh.position.setY(25);
+
+        let entity = new SteeringEntity(i + 10, entityMesh);
+        entity.name = "seekEntity" + i;
+        setRandomPosition(entity);
+        seekEntities.push(entity);
         scene.add(entity);
       }
 
@@ -158,28 +185,17 @@
         lookAtDirection: true,
         wanderDistance: 1,
         wanderRadius: 1,
-        wanderRange: 1,
-        numEntities: 20,
+        wanderRange: 2,
       };
 
       //Gui
       var gui = new dat.GUI();
-      gui.add(params, "maxSpeed", 1, 5).name("Max Speed").step(1);
-      gui.add(params, "maxForce", 1, 2).name("Max Force").step(1);
-      gui
-        .add(params, "wanderRadius", 1, MAP_LIMIT)
-        .name("Wander Radius")
-        .step(1);
-      gui.add(params, "wanderRange", 1, 10).name("Wander Range").step(1);
-      gui.add(params, "wanderDistance", 1, 10).name("Wander Distance").step(1);
       gui
         .add(heightMap, "heightIterator", 0, 0.5)
         .name("Height map iterator")
         .step(0.001);
 
       window.addEventListener("resize", onWindowResize, false);
-      document.addEventListener("mousedown", onClick, true);
-      document.addEventListener("keypress", onClick, true);
       animate();
     }
 
@@ -190,23 +206,50 @@
     }
 
     function animate() {
-      requestAnimationFrame(animate);
+      iterationsCount += 1;
+
+      animationFrame = requestAnimationFrame(animate);
       controls.update();
 
-      for (var i = 0; i < entities.length; i++) {
-        entities[i].maxSpeed = params.maxSpeed;
-        entities[i].maxForce = params.maxForce;
-        entities[i].wanderDistance = params.wanderDistance;
-        entities[i].wanderRadius = params.wanderRadius;
-        entities[i].wanderRange = params.wanderRange;
-        entities[i].wander();
+      if (iterationsCount < MAX_ITERATIONS) {
+        for (var i = 0; i < wanderEntities.length; i++) {
+          // Wander
+          wanderEntities[i].wander();
 
-        if (params.lookAtDirection) entities[i].lookWhereGoing(true);
-        else entities[i].rotation.set(0, 0, 0);
+          if (params.lookAtDirection) wanderEntities[i].lookWhereGoing(true);
+          else wanderEntities[i].rotation.set(0, 0, 0);
 
-        entities[i].bounce(boundaries);
-        entities[i].update();
-        heightMap.update(entities[i]);
+          wanderEntities[i].bounce(boundaries);
+          wanderEntities[i].update();
+
+          heightMap.update(wanderEntities[i]);
+
+          // Seek
+          seekEntities[i].seek(wanderEntities[i].position);
+          seekEntities[i].maxSpeed = wanderEntities[i].maxSpeed / 2;
+
+          if (params.lookAtDirection) seekEntities[i].lookWhereGoing(true);
+          else seekEntities[i].rotation.set(0, 0, 0);
+
+          seekEntities[i].bounce(boundaries);
+          seekEntities[i].update();
+
+          heightMap.update(seekEntities[i]);
+        }
+      } else if (iterationsCount === MAX_ITERATIONS) {
+        constructTerrain();
+        scene.remove(floor);
+
+        for (var i = 0; i < wanderEntities.length; i++) {
+          let wanderEntity = scene.getObjectByName("wanderEntity" + i);
+          scene.remove(wanderEntity);
+
+          let seekEntity = scene.getObjectByName("seekEntity" + i);
+          scene.remove(seekEntity);
+        }
+
+        downloadCsv(heightMap, "Wander_Seek");
+        downloadScreenshot("Wander_Seek");
       }
 
       renderer.render(scene, camera);
@@ -216,12 +259,12 @@
 
   <body onload="init('container')">
     <div id="container"></div>
-    <div id="msg">
+    <!-- <div id="msg">
       <span style="color: #bfff00; font-weight: bold"
         >Press 't' to construct the terrain:
       </span>
       <br />After this will not be possible to update<br />the height map.
-    </div>
+    </div> -->
     <a
       href="https://github.com/erosmarcon/three-steer/blob/master/examples/Arrive.html"
       target="_blank"
