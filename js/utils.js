@@ -32,7 +32,7 @@ function downloadCsv(heightMap, type) {
   );
   file.setAttribute(
     "download",
-    `${type}_${NUM_ENTITIES}_Interations_${MAX_ITERATIONS}_heightIterator_${heightMap.heightIterator}.csv`
+    `${type}_${NUM_ENTITIES}_Interations_${MAX_ITERATIONS}_heightIterator_${MAX_HEIGHT_MAP_ITERATOR ?? heightMap.heightIterator}${MIN_HEIGHT_MAP_ITERATOR !== 0 ? `_${MIN_HEIGHT_MAP_ITERATOR}` : ''}.csv`
   );
   document.body.appendChild(file);
   document.querySelector("#download-csv").click();
@@ -44,7 +44,7 @@ function downloadScreenshot(type) {
     	var image = document.createElement('a');
       var url = URL.createObjectURL(blob);
       image.href = url;
-      image.download = `${type}_${NUM_ENTITIES}_Interations_${MAX_ITERATIONS}_heightIterator_${heightMap.heightIterator}.png`;
+      image.download = `${type}_${NUM_ENTITIES}_Interations_${MAX_ITERATIONS}_heightIterator_${MAX_HEIGHT_MAP_ITERATOR ?? heightMap.heightIterator}${MIN_HEIGHT_MAP_ITERATOR  !== 0 ? `_${MIN_HEIGHT_MAP_ITERATOR}` : ''}.png`;
       image.click();
     }, 'image/png', 1.0);
 }

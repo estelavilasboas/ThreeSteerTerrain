@@ -44,6 +44,9 @@
     const NUM_ENTITIES = 10;
     const MAX_ITERATIONS = 20000;
 
+    const MIN_HEIGHT_MAP_ITERATOR = -0.025;
+    const MAX_HEIGHT_MAP_ITERATOR = 0.05;
+
     function constructTerrain() {
       if (!!scene.getObjectByName("terrain")) {
         terrain.geometry.dispose();
@@ -79,9 +82,9 @@
 
       container = document.getElementById(element);
       camera = new THREE.PerspectiveCamera(
-        3,
+        4,
         window.innerWidth / window.innerHeight,
-        1,
+        2,
         50000
       );
       scene = new THREE.Scene();
@@ -93,7 +96,7 @@
       renderer.domElement.style.top = 0;
       container.appendChild(renderer.domElement);
 
-      camera.position.set(3500, 3500, 5000);
+      camera.position.set(3600, 3600, 5500);
       camera.lookAt(new THREE.Vector3(0, 0, 0));
 
       controls = new THREE.OrbitControls(camera, renderer.domElement);
@@ -210,9 +213,9 @@
           entities[i].update();
 
           if (i % 2 === 0) {
-            heightMap.heightIterator = 0.05;
+            heightMap.heightIterator = MAX_HEIGHT_MAP_ITERATOR;
           } else {
-            heightMap.heightIterator = -0.025;
+            heightMap.heightIterator = MIN_HEIGHT_MAP_ITERATOR;
           }
 
           heightMap.update(entities[i]);
