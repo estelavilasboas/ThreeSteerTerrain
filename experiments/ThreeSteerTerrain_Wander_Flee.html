@@ -81,9 +81,9 @@
 
       container = document.getElementById(element);
       camera = new THREE.PerspectiveCamera(
-        3,
+        4,
         window.innerWidth / window.innerHeight,
-        1,
+        2,
         50000
       );
       scene = new THREE.Scene();
@@ -95,7 +95,7 @@
       renderer.domElement.style.top = 0;
       container.appendChild(renderer.domElement);
 
-      camera.position.set(3500, 3500, 5000);
+      camera.position.set(3600, 3600, 5500);
       camera.lookAt(new THREE.Vector3(0, 0, 0));
 
       controls = new THREE.OrbitControls(camera, renderer.domElement);
